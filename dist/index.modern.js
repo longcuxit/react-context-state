@@ -164,7 +164,7 @@ var Store = /*#__PURE__*/function () {
         _createAction = this._createAction;
 
     var firePoint = function firePoint(store, fire) {
-      fire && fire(store.api, store.action);
+      return fire && fire(store.api, store.action);
     };
 
     return function (_ref2) {

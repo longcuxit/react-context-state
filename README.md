@@ -1,13 +1,13 @@
-# react-context-state
+# react-sweet-context
 
 > a lightweight library with a simple way of working to help you manage local state.
 
-[![NPM](https://img.shields.io/npm/v/react-context-state.svg)](https://www.npmjs.com/package/react-context-state) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![NPM](https://img.shields.io/npm/v/react-sweet-context.svg)](https://www.npmjs.com/package/react-sweet-context) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 ## Install
 
 ```bash
-npm install --save react-context-state
+npm install --save react-sweet-context
 ```
 
 ## Usage
@@ -15,8 +15,8 @@ npm install --save react-context-state
 ```tsx
 import React, { Component } from 'react'
 
-import MyComponent from 'react-context-state'
-import 'react-context-state/dist/index.css'
+import MyComponent from 'react-sweet-context'
+import 'react-sweet-context/dist/index.css'
 
 class Example extends Component {
   render() {

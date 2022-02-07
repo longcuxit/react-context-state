@@ -1,4 +1,4 @@
-import { Store } from 'react-context-state'
+import { Store } from 'react-sweet-context'
 
 const store = new Store({
   name: 'Toggle',

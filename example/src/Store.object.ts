@@ -1,4 +1,4 @@
-import { Store } from 'react-context-state'
+import { Store } from 'react-sweet-context'
 
 const state = { a: 0, b: 0 }
 type StateType = typeof state

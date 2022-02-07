@@ -1,10 +1,10 @@
 {
-  "name": "react-context-state",
+  "name": "react-sweet-context",
   "version": "1.0.0",
   "description": "a lightweight library with a simple way of working to help you manage local state.",
   "author": "longcuxit",
   "license": "MIT",
-  "repository": "longcuxit/react-context-state",
+  "repository": "longcuxit/react-sweet-context",
   "main": "dist/index.js",
   "type": "dist/index.d.ts",
   "module": "dist/index.modern.js",
