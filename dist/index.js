@@ -160,55 +160,48 @@ var Store = /*#__PURE__*/function () {
       cycle = {};
     }
 
-    var _a;
-
     var Context = this.Context,
         _createAction = this._createAction;
-    return _a = /*#__PURE__*/function (_Component) {
-      _inheritsLoose(_a, _Component);
 
-      function _a(props) {
-        var _this;
+    var firePoint = function firePoint(store, fire) {
+      fire && fire(store.api, store.action);
+    };
 
-        _this = _Component.call(this, props) || this;
+    return function (_ref2) {
+      var children = _ref2.children,
+          state = _ref2.state;
 
-        _this.firePoint = function (fire) {
-          fire && fire(_this.store.api, _this.store.action);
+      var _useState = react.useState(function () {
+        return new Subscriber(state, _createAction);
+      }),
+          store = _useState[0];
+
+      react.useEffect(function () {
+        firePoint(store, cycle.create);
+        return function () {
+          return firePoint(store, cycle.dispose);
         };
-
-        _this.store = new Subscriber(props.state, _createAction);
-
-        _this.firePoint(cycle.create);
-
-        return _this;
-      }
-
-      var _proto2 = _a.prototype;
-
-      _proto2.shouldComponentUpdate = function shouldComponentUpdate(next) {
-        if (next.state !== this.props.state) {
-          this.store.value = next.state;
-          this.firePoint(cycle.update);
-          return true;
+      }, [store]);
+      react.useEffect(function () {
+        if (store.value !== state) {
+          store.value = state;
+          firePoint(store, cycle.update);
         }
+      }, [state, store]);
+      return react.createElement(Context.Provider, {
+        value: store,
+        children: children
+      });
+    };
+  };
 
-        return false;
-      };
-
-      _proto2.componentWillUnmount = function componentWillUnmount() {
-        this.firePoint(cycle.dispose);
-      };
-
-      _proto2.render = function render() {
-        var children = this.props.children;
-        return react.createElement(Context.Provider, {
-          value: this.store,
-          children: children
-        });
-      };
-
-      return _a;
-    }(react.Component), _a.displayName = Context.displayName, _a;
+  _proto.createSubscriber = function createSubscriber() {
+    var Context = this.Context;
+    return function (_ref3) {
+      var children = _ref3.children;
+      var context = react.useContext(Context);
+      return children(context.value, context.action);
+    };
   };
 
   _proto.createHook = function createHook(selector) {
@@ -218,30 +211,34 @@ var Store = /*#__PURE__*/function () {
       return v;
     };
 
-    return function (flag) {
+    return function () {
+      for (var _len = arguments.length, flags = new Array(_len), _key = 0; _key < _len; _key++) {
+        flags[_key] = arguments[_key];
+      }
+
       var store = react.useContext(Context);
 
-      var _useState = react.useState(function () {
-        return select(store.value, flag);
+      var _useState2 = react.useState(function () {
+        return select.apply(void 0, [store.value].concat(flags));
       }),
-          state = _useState[0],
-          setState = _useState[1];
+          state = _useState2[0],
+          setState = _useState2[1];
 
       react.useEffect(function () {
-        setState(select(store.value, flag));
+        setState(select.apply(void 0, [store.value].concat(flags)));
         return store.addListen(function () {
-          return setState(select(store.value, flag));
+          return setState(select.apply(void 0, [store.value].concat(flags)));
         });
-      }, [store, flag]);
+      }, [store].concat(flags));
       return [state, store.action];
     };
   };
 
-  _proto.createAction = function createAction() {
-    var _this2 = this;
+  _proto.createHookAction = function createHookAction() {
+    var _this = this;
 
     return function () {
-      return react.useContext(_this2.Context).action;
+      return react.useContext(_this.Context).action;
     };
   };
 

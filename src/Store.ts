@@ -1,8 +1,8 @@
 import {
-  Component,
   Context,
   createContext,
   createElement,
+  ReactNode,
   useContext,
   useEffect,
   useState
@@ -39,61 +39,62 @@ export class Store<State, Action> {
 
   createContainer(cycle: ContainerLifeCycle<State, Action> = {}) {
     const { Context, _createAction } = this
-    type Props = { state: State }
+    type Props = { state: State; children: ReactNode }
 
-    return class extends Component<Props> {
-      static displayName = Context.displayName
-      store: Subscriber<State, Action>
-      constructor(props: Props) {
-        super(props)
-        this.store = new Subscriber(props.state, _createAction)
-        this.firePoint(cycle.create)
-      }
+    const firePoint = (
+      store: Subscriber<State, Action>,
+      fire?: ContainerLifePoint<State, Action>
+    ) => fire && fire(store.api, store.action)
 
-      firePoint = (fire?: ContainerLifePoint<State, Action>) => {
-        fire && fire(this.store.api, this.store.action)
-      }
+    return ({ children, state }: Props) => {
+      const [store] = useState(() => new Subscriber(state, _createAction))
 
-      shouldComponentUpdate(next: Props) {
-        if (next.state !== this.props.state) {
-          this.store.value = next.state
-          this.firePoint(cycle.update)
-          return true
+      useEffect(() => {
+        firePoint(store, cycle.create)
+        return () => firePoint(store, cycle.dispose)
+      }, [store])
+
+      useEffect(() => {
+        if (store.value !== state) {
+          store.value = state
+          firePoint(store, cycle.update)
         }
-        return false
-      }
+      }, [state, store])
 
-      componentWillUnmount() {
-        this.firePoint(cycle.dispose)
-      }
-
-      render() {
-        const { children } = this.props
-        return createElement(Context.Provider, { value: this.store, children })
-      }
+      return createElement(Context.Provider, { value: store, children })
     }
   }
 
-  createHook<Value = State, Flag = void>(
-    selector?: HookSelector<State, Value, Flag>
+  createSubscriber() {
+    const { Context } = this
+    type Props = { children: (state: State, action: Action) => ReactNode }
+
+    return ({ children }: Props) => {
+      const context = useContext(Context)
+      return children(context.value, context.action)
+    }
+  }
+
+  createHook<Value = State, Flags extends any[] = never>(
+    selector?: HookSelector<State, Value, Flags>
   ) {
     const { Context } = this
-    type Select = (state: State, flag: Flag) => Value
+    type Select = (state: State, ...flags: Flags) => Value
     const select = (selector || ((v) => v)) as Select
-    return (flag: Flag): [Value, Action] => {
+    return (...flags: Flags): [Value, Action] => {
       const store = useContext(Context)
-      const [state, setState] = useState(() => select(store.value, flag))
+      const [state, setState] = useState(() => select(store.value, ...flags))
 
       useEffect(() => {
-        setState(select(store.value, flag))
-        return store.addListen(() => setState(select(store.value, flag)))
-      }, [store, flag])
+        setState(select(store.value, ...flags))
+        return store.addListen(() => setState(select(store.value, ...flags)))
+      }, [store, ...flags])
 
       return [state, store.action]
     }
   }
 
-  createAction() {
+  createHookAction() {
     return () => useContext(this.Context).action
   }
 }
